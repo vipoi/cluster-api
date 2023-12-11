@@ -140,7 +140,11 @@ func (k *proxy) GetConfig() (*rest.Config, error) {
 		CurrentContext: k.kubeconfig.Context,
 		Timeout:        k.timeout.String(),
 	}
-	restConfig, err := clientcmd.NewDefaultClientConfig(*config, configOverrides).ClientConfig()
+
+	restConfig, err := rest.InClusterConfig()
+	if err != nil {
+		restConfig, err = clientcmd.NewDefaultClientConfig(*config, configOverrides).ClientConfig()
+	}
 	if err != nil {
 		if strings.HasPrefix(err.Error(), "invalid configuration:") {
 			return nil, errors.New(strings.Replace(err.Error(), "invalid configuration:", "invalid kubeconfig file; clusterctl requires a valid kubeconfig file to connect to the management cluster:", 1))
